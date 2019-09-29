@@ -83,6 +83,9 @@ namespace API.Controllers
         {
             int userId;
 
+            if (!ModelState.IsValid)
+                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+
             try
             {
                 var cookieValue = CookieHelper.GetCookieValue(Request);
@@ -99,7 +102,7 @@ namespace API.Controllers
 
                 // User is modifying the item, which is not owned by him.
                 if (!_repository.GetAll().AsNoTracking().Any(i => i.Id == editedItem.Id && i.UserId == userId))
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                    return new HttpResponseMessage(HttpStatusCode.NotFound);
 
                 editedItem.UserId = userId;
 
@@ -111,6 +114,43 @@ namespace API.Controllers
             {
                 return new HttpResponseMessage(HttpStatusCode.NotModified);
             }
+        }
+
+        [HttpDelete]
+        [Route("{itemId}")]
+        public HttpResponseMessage DeleteItem(int itemId)
+        {
+            int userId;
+
+            if (!ModelState.IsValid)
+                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+
+            try
+            {
+                var cookieValue = CookieHelper.GetCookieValue(Request);
+                userId = int.Parse(cookieValue);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            }
+
+            var deletingItem = _repository
+                .GetAll().FirstOrDefault(i => i.Id == itemId && i.UserId == userId);
+
+            if (deletingItem == null)
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+
+            try
+            {
+                _repository.Remove(deletingItem);
+            }
+            catch (Exception)
+            {
+                return new HttpResponseMessage(HttpStatusCode.NotModified);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }
