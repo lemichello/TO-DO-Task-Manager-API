@@ -8,6 +8,8 @@ namespace DAL.Repositories.Implementation
 {
     public class EfRepository<T> : IRepository<T> where T : class
     {
+        private readonly EfContext _context;
+
         public EfRepository(EfContext context)
         {
             _context = context;
@@ -27,8 +29,12 @@ namespace DAL.Repositories.Implementation
 
         public void Edit(T entity)
         {
+            _context.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
+
             _context.SaveChanges();
+
+            _context.Entry(entity).State = EntityState.Detached;
         }
 
         public IQueryable<T> GetAll()
@@ -40,7 +46,5 @@ namespace DAL.Repositories.Implementation
         {
             return _context.Set<T>().Where(predicate).AsQueryable();
         }
-
-        private readonly EfContext _context;
     }
 }

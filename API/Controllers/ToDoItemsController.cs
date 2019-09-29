@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using API.Helpers;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -14,6 +16,10 @@ namespace API.Controllers
     [ApiController]
     public class ToDoItemsController : ControllerBase
     {
+        private readonly Mapper _dtoMapper;
+
+        private readonly IRepository<ToDoItem> _repository;
+
         public ToDoItemsController(IRepository<ToDoItem> repository, Profile mapperProfile)
         {
             _repository = repository;
@@ -23,14 +29,21 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GetItems()
         {
-            var cookie = Request.Cookies.FirstOrDefault(i => i.Key == "taskManagerUserId");
+            string cookieValue;
 
-            if (cookie.Equals(default(KeyValuePair<string, string>)))
+            try
+            {
+                cookieValue = CookieHelper.GetCookieValue(Request);
+            }
+            catch (UnauthorizedAccessException)
+            {
                 return Unauthorized();
+            }
 
-            var userId = int.Parse(cookie.Value);
+            var userId = int.Parse(cookieValue);
             var items = _repository
                 .GetAll(i => i.UserId == userId)
+                .AsNoTracking()
                 .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
                 .ToList();
 
@@ -43,12 +56,18 @@ namespace API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var cookie = Request.Cookies.FirstOrDefault(i => i.Key == "taskManagerUserId");
+            string cookieValue;
 
-            if (cookie.Equals(default(KeyValuePair<string, string>)))
+            try
+            {
+                cookieValue = CookieHelper.GetCookieValue(Request);
+            }
+            catch (UnauthorizedAccessException)
+            {
                 return Unauthorized();
+            }
 
-            var userId  = int.Parse(cookie.Value);
+            var userId  = int.Parse(cookieValue);
             var newItem = _dtoMapper.Map<ToDoItem>(item);
 
             newItem.UserId       = userId;
@@ -59,7 +78,39 @@ namespace API.Controllers
             return Ok();
         }
 
-        private readonly IRepository<ToDoItem> _repository;
-        private readonly Mapper                _dtoMapper;
+        [HttpPut]
+        public HttpResponseMessage UpdateItem([FromBody] ToDoItemDto item)
+        {
+            int userId;
+
+            try
+            {
+                var cookieValue = CookieHelper.GetCookieValue(Request);
+                userId = int.Parse(cookieValue);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            }
+
+            try
+            {
+                var editedItem = _dtoMapper.Map<ToDoItem>(item);
+
+                // User is modifying the item, which is not owned by him.
+                if (!_repository.GetAll().AsNoTracking().Any(i => i.Id == editedItem.Id && i.UserId == userId))
+                    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+
+                editedItem.UserId = userId;
+
+                _repository.Edit(editedItem);
+
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+            catch (Exception)
+            {
+                return new HttpResponseMessage(HttpStatusCode.NotModified);
+            }
+        }
     }
 }

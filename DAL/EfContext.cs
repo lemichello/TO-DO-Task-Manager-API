@@ -20,6 +20,7 @@ namespace DAL
         public virtual DbSet<Tag> Tags { get; set; }
         public virtual DbSet<ToDoItem> ToDoItems { get; set; }
         public virtual DbSet<User> Users { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -27,13 +28,14 @@ namespace DAL
                 optionsBuilder.UseSqlServer(
                     "Data Source=todotaskmanagerdb.cwaho3bjmren.eu-central-1.rds.amazonaws.com;Initial Catalog=ToDoTaskDb;User ID=admin;Password=cjexaBC1sVyfacAR3n2W");
             }
-            
+
             base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ToDoItem>()
+                .HasKey(i => i.Id);
 
             modelBuilder.Entity<ProjectsUsers>()
                 .HasKey(pu => new {pu.ProjectId, pu.UserId});
@@ -50,6 +52,8 @@ namespace DAL
                 .HasKey(it => new {it.ToDoItemId, it.TagId});
             modelBuilder.Entity<MigrationHistory>()
                 .HasKey(mh => mh.MigrationId);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
