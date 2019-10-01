@@ -45,6 +45,7 @@ namespace API
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors();
 
             app.UseHttpsRedirection();
 
