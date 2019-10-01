@@ -28,6 +28,8 @@ namespace API
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<Profile, MapperProfile>();
 
+            services.AddHttpsRedirection(options => options.HttpsPort = 8999);
+
             services.AddControllers();
         }
 
@@ -38,6 +40,7 @@ namespace API
             {
                 app.UseDeveloperExceptionPage();
             }
+
 
             app.UseHttpsRedirection();
 
