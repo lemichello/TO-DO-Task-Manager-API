@@ -16,10 +16,6 @@ namespace API.Controllers
     [ApiController]
     public class ToDoItemsController : ControllerBase
     {
-        private readonly Mapper _dtoMapper;
-
-        private readonly IRepository<ToDoItem> _repository;
-
         public ToDoItemsController(IRepository<ToDoItem> repository, Profile mapperProfile)
         {
             _repository = repository;
@@ -152,5 +148,9 @@ namespace API.Controllers
 
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
+
+        private readonly Mapper _dtoMapper;
+
+        private readonly IRepository<ToDoItem> _repository;
     }
 }

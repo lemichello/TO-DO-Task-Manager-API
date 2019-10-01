@@ -14,8 +14,6 @@ namespace API.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly IRepository<User> _repository;
-
         public LoginController(IRepository<User> repository)
         {
             _repository = repository;
@@ -45,5 +43,7 @@ namespace API.Controllers
 
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
+
+        private readonly IRepository<User> _repository;
     }
 }
