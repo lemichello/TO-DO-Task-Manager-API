@@ -5,6 +5,7 @@ using System.Net.Http;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DTO;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +15,10 @@ namespace API.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        public LoginController(IRepository<User> repository)
+        public LoginController(IRepository<User> repository, IDataProtectionProvider provider)
         {
             _repository = repository;
+            _protector  = provider.CreateProtector(nameof(LoginController));
         }
 
         [HttpPost]
@@ -39,11 +41,14 @@ namespace API.Controllers
                 Path    = "/"
             };
 
-            Response.Cookies.Append("taskManagerUserId", foundUser.Id.ToString(), cookieOptions);
+            Response.Cookies.Append("taskManagerUserId",
+                _protector.Protect(foundUser.Id.ToString()),
+                cookieOptions);
 
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
         private readonly IRepository<User> _repository;
+        private readonly IDataProtector    _protector;
     }
 }

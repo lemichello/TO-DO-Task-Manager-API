@@ -6,6 +6,7 @@ using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DLL.Services;
 using DTO;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -14,10 +15,12 @@ namespace API.Controllers
     [ApiController]
     public class ProjectsController : ControllerBase
     {
-        public ProjectsController(IRepository<ToDoItem> repository, Profile mapperProfile)
+        public ProjectsController(IRepository<ToDoItem> repository, Profile mapperProfile,
+            IDataProtectionProvider provider)
         {
             _itemsRepository = repository;
             _dtoMapper       = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(mapperProfile)));
+            _protector       = provider.CreateProtector(nameof(LoginController));
         }
 
         [HttpGet]
@@ -27,7 +30,7 @@ namespace API.Controllers
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request);
+                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
             }
             catch (UnauthorizedAccessException)
             {
@@ -57,5 +60,6 @@ namespace API.Controllers
 
         private readonly Mapper                _dtoMapper;
         private readonly IRepository<ToDoItem> _itemsRepository;
+        private readonly IDataProtector        _protector;
     }
 }

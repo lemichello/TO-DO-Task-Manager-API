@@ -4,6 +4,7 @@ using DAL;
 using DAL.Repositories.Abstraction;
 using DAL.Repositories.Implementation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +29,9 @@ namespace API
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<Profile, MapperProfile>();
 
+            services.AddAuthentication();
+            services.AddDataProtection()
+                .SetApplicationName("TO-DO Task Manager API");
             services.AddHttpsRedirection(options => options.HttpsPort = 8999);
 
             services.AddControllers();

@@ -7,6 +7,7 @@ using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DTO;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,10 +17,12 @@ namespace API.Controllers
     [ApiController]
     public class ToDoItemsController : ControllerBase
     {
-        public ToDoItemsController(IRepository<ToDoItem> repository, Profile mapperProfile)
+        public ToDoItemsController(IRepository<ToDoItem> repository, Profile mapperProfile,
+            IDataProtectionProvider provider)
         {
             _repository = repository;
             _dtoMapper  = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(mapperProfile)));
+            _protector  = provider.CreateProtector(nameof(LoginController));
         }
 
         [HttpGet]
@@ -29,7 +32,7 @@ namespace API.Controllers
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request);
+                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
             }
             catch (UnauthorizedAccessException)
             {
@@ -56,7 +59,7 @@ namespace API.Controllers
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request);
+                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
             }
             catch (UnauthorizedAccessException)
             {
@@ -84,7 +87,7 @@ namespace API.Controllers
 
             try
             {
-                var cookieValue = CookieHelper.GetCookieValue(Request);
+                var cookieValue = CookieHelper.GetCookieValue(Request, _protector);
                 userId = int.Parse(cookieValue);
             }
             catch (UnauthorizedAccessException)
@@ -123,7 +126,7 @@ namespace API.Controllers
 
             try
             {
-                var cookieValue = CookieHelper.GetCookieValue(Request);
+                var cookieValue = CookieHelper.GetCookieValue(Request, _protector);
                 userId = int.Parse(cookieValue);
             }
             catch (UnauthorizedAccessException)
@@ -149,8 +152,8 @@ namespace API.Controllers
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
-        private readonly Mapper _dtoMapper;
-
+        private readonly Mapper                _dtoMapper;
         private readonly IRepository<ToDoItem> _repository;
+        private readonly IDataProtector        _protector;
     }
 }
