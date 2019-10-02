@@ -11,6 +11,7 @@ namespace API.Helpers
             CreateMap<ToDoItem, ToDoItemDto>();
             CreateMap<ToDoItemDto, ToDoItem>();
             CreateMap<BaseToDoItemDto, ToDoItem>();
+            CreateMap<Project, ProjectDto>();
         }
     }
 }

@@ -4,10 +4,10 @@ using API.Helpers;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
-using DLL.Services;
 using DTO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -15,16 +15,16 @@ namespace API.Controllers
     [ApiController]
     public class ProjectsController : ControllerBase
     {
-        public ProjectsController(IRepository<ToDoItem> repository, Profile mapperProfile,
+        public ProjectsController(IRepository<ProjectsUsers> projectsUsersRepository, Profile mapperProfile,
             IDataProtectionProvider provider)
         {
-            _itemsRepository = repository;
-            _dtoMapper       = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(mapperProfile)));
-            _protector       = provider.CreateProtector(nameof(LoginController));
+            _projectsUsersRepository = projectsUsersRepository;
+            _dtoMapper               = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(mapperProfile)));
+            _protector               = provider.CreateProtector(nameof(LoginController));
         }
 
         [HttpGet]
-        public IActionResult GetItems([FromBody] ProjectDto project)
+        public IActionResult GetSharedProjects()
         {
             string cookieValue;
 
@@ -37,29 +37,18 @@ namespace API.Controllers
                 return Unauthorized();
             }
 
-            var userId  = int.Parse(cookieValue);
-            var items   = _itemsRepository.GetAll();
-            var minDate = DateTime.MinValue.AddYears(1753);
+            var userId = int.Parse(cookieValue);
+            var projects = _projectsUsersRepository
+                .GetAll(i => i.UserId == userId && i.IsAccepted)
+                .AsNoTracking()
+                .Select(i => _dtoMapper.Map<ProjectDto>(i.Project))
+                .ToList();
 
-            if (project.Id == null)
-            {
-                items = items.Where(i => i.UserId == userId);
-                var projectItems = ProjectsService.GetItemsFromDefaultProject(project, items, _dtoMapper);
-
-                return Ok(projectItems);
-            }
-            else
-            {
-                var projectItems = items.Where(i => i.ProjectId == project.Id &&
-                                                    i.Project.Name == project.Name &&
-                                                    i.CompleteDate == minDate).ToList();
-
-                return Ok(projectItems);
-            }
+            return Ok(projects);
         }
 
-        private readonly Mapper                _dtoMapper;
-        private readonly IRepository<ToDoItem> _itemsRepository;
-        private readonly IDataProtector        _protector;
+        private readonly Mapper                     _dtoMapper;
+        private readonly IRepository<ProjectsUsers> _projectsUsersRepository;
+        private readonly IDataProtector             _protector;
     }
 }
