@@ -38,7 +38,8 @@ namespace API.Controllers
             var cookieOptions = new CookieOptions
             {
                 Expires = DateTimeOffset.Now.AddDays(7),
-                Path    = "/"
+                Path    = "/",
+                Secure  = true
             };
 
             Response.Cookies.Append("taskManagerUserId",
