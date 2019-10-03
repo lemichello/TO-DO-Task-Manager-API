@@ -33,14 +33,13 @@ namespace API
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddCors(options =>
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
             {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.WithOrigins("chrome-extension://miimgadmfgmhpdplnecaglnhaamgeegb")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials());
-            });
+                builder.WithOrigins("chrome-extension://miimgadmfgmhpdplnecaglnhaamgeegb")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            }));
             services.AddDbContext<EfContext>(opt => opt.UseSqlServer(Configuration["ConnectionString"]));
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<Profile, MapperProfile>();

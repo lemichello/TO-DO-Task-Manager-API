@@ -1,12 +1,8 @@
-using System;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DTO;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -22,10 +18,10 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public HttpResponseMessage Login([Bind("Login,Password")] UserDto user)
+        public IActionResult Login([FromBody] UserDto user)
         {
             if (!ModelState.IsValid)
-                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                return BadRequest();
 
             var foundUser = _repository
                 .GetAll(u => u.Login == user.Login
@@ -33,20 +29,9 @@ namespace API.Controllers
                 .FirstOrDefault();
 
             if (foundUser == null)
-                return new HttpResponseMessage(HttpStatusCode.NotFound);
+                return NotFound();
 
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTimeOffset.Now.AddDays(7),
-                Path    = "/",
-                Secure  = true
-            };
-
-            Response.Cookies.Append("taskManagerUserId",
-                _protector.Protect(foundUser.Id.ToString()),
-                cookieOptions);
-
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Ok(_protector.Protect(foundUser.Id.ToString()));
         }
 
         private readonly IRepository<User> _repository;
