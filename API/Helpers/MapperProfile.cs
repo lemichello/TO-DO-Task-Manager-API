@@ -8,7 +8,9 @@ namespace API.Helpers
     {
         public MapperProfile()
         {
-            CreateMap<ToDoItem, ToDoItemDto>();
+            CreateMap<ToDoItem, ToDoItemDto>()
+                .ForMember(dest => dest.ProjectName,
+                    opt => opt.MapFrom(src => src.ProjectId == null ? "" : src.Project.Name));
             CreateMap<ToDoItemDto, ToDoItem>();
             CreateMap<BaseToDoItemDto, ToDoItem>();
             CreateMap<Project, ProjectDto>();

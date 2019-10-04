@@ -39,7 +39,7 @@ namespace API.Controllers
             }
 
             var userId  = int.Parse(cookieValue);
-            var items   = _itemsRepository.GetAll().AsNoTracking();
+            var items   = _itemsRepository.GetAll().Include(i => i.Project).AsNoTracking();
             var minDate = DateTime.MinValue.AddYears(1753);
 
             if (project.Id == null)
@@ -51,9 +51,12 @@ namespace API.Controllers
             }
             else
             {
-                var projectItems = items.Where(i => i.ProjectId == project.Id &&
-                                                    i.Project.Name == project.Name &&
-                                                    i.CompleteDate == minDate).ToList();
+                var projectItems = items
+                    .Where(i => i.ProjectId == project.Id &&
+                                i.Project.Name == project.Name &&
+                                i.CompleteDate == minDate)
+                    .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
+                    .ToList();
 
                 return Ok(projectItems);
             }
