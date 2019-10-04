@@ -24,7 +24,7 @@ namespace API.Controllers
             _protector       = provider.CreateProtector(nameof(LoginController));
         }
 
-        [HttpGet]
+        [HttpPost]
         public IActionResult GetItemsForProject([FromBody] ProjectDto project)
         {
             string cookieValue;
