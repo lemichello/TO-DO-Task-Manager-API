@@ -13,7 +13,13 @@ namespace API
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseKestrel();
+                    webBuilder.UseIISIntegration();
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls("https://localhost:80");
+                });
         }
     }
 }
