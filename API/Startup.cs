@@ -47,7 +47,6 @@ namespace API
             services.AddAuthentication();
             services.AddDataProtection()
                 .SetApplicationName("TO-DO Task Manager API");
-            services.AddHttpsRedirection(options => options.HttpsPort = 8999);
 
             services.AddControllers();
         }
