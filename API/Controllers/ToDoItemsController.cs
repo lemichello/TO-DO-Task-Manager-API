@@ -17,12 +17,13 @@ namespace API.Controllers
     [ApiController]
     public class ToDoItemsController : ControllerBase
     {
-        public ToDoItemsController(IRepository<ToDoItem> repository, Profile mapperProfile,
-            IDataProtectionProvider provider)
+        public ToDoItemsController(IRepository<ToDoItem> repository, IRepository<ProjectsUsers> projectUsersRepository,
+            Profile mapperProfile, IDataProtectionProvider provider)
         {
-            _repository = repository;
-            _dtoMapper  = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(mapperProfile)));
-            _protector  = provider.CreateProtector(nameof(LoginController));
+            _repository             = repository;
+            _projectUsersRepository = projectUsersRepository;
+            _dtoMapper              = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(mapperProfile)));
+            _protector              = provider.CreateProtector(nameof(LoginController));
         }
 
         [HttpGet]
@@ -99,8 +100,13 @@ namespace API.Controllers
             {
                 var editedItem = _dtoMapper.Map<ToDoItem>(item);
 
+                var projectsUsers = _projectUsersRepository.GetAll(p => p.UserId == userId && p.IsAccepted)
+                    .AsNoTracking();
+
                 // User is modifying the item, which is not owned by him.
-                if (!_repository.GetAll().AsNoTracking().Any(i => i.Id == editedItem.Id && i.UserId == userId))
+                if (!_repository.GetAll().AsNoTracking().Any(i =>
+                    i.Id == editedItem.Id && i.UserId == userId && (i.ProjectId == null || projectsUsers.Any(p =>
+                                                                        i.ProjectId == p.ProjectId))))
                     return new HttpResponseMessage(HttpStatusCode.NotFound);
 
                 editedItem.UserId = userId;
@@ -152,8 +158,9 @@ namespace API.Controllers
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
-        private readonly Mapper                _dtoMapper;
-        private readonly IRepository<ToDoItem> _repository;
-        private readonly IDataProtector        _protector;
+        private readonly Mapper                     _dtoMapper;
+        private readonly IRepository<ToDoItem>      _repository;
+        private readonly IRepository<ProjectsUsers> _projectUsersRepository;
+        private readonly IDataProtector             _protector;
     }
 }

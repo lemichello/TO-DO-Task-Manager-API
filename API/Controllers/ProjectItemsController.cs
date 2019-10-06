@@ -45,7 +45,7 @@ namespace API.Controllers
             if (project.Id == null)
             {
                 items = items.Where(i => i.UserId == userId);
-                var projectItems = ProjectsService.GetItemsFromDefaultProject(project, items, _dtoMapper);
+                var projectItems = ProjectsService.GetItemsFromDefaultProject(project, items, _dtoMapper).ToList();
 
                 return Ok(projectItems);
             }

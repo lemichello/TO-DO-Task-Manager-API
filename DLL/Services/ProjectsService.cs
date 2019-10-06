@@ -30,7 +30,8 @@ namespace DLL.Services
                     break;
 
                 case "Upcoming":
-                    items = items.Where(i => i.CompleteDate == minDate && i.Date > DateTime.Today).OrderBy(i => i.Date);
+                    items = items.Where(i => i.CompleteDate == minDate &&
+                                             i.Date > DateTime.UtcNow).OrderBy(i => i.Date);
                     break;
 
                 case "Logbook":

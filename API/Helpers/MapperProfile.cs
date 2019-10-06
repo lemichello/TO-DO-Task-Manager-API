@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using DAL.Entities;
 using DTO;
@@ -8,6 +9,7 @@ namespace API.Helpers
     {
         public MapperProfile()
         {
+            CreateMap<string, DateTime>().ConvertUsing<StringToDateTimeConverter>();
             CreateMap<ToDoItem, ToDoItemDto>()
                 .ForMember(dest => dest.ProjectName,
                     opt => opt.MapFrom(src => src.ProjectId == null ? "" : src.Project.Name));
