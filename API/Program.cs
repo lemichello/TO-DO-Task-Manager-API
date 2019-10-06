@@ -15,7 +15,7 @@ namespace API
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls("http://localhost:5000", "http://*:8080");
+                    webBuilder.UseUrls("https://localhost:8999");
                     webBuilder.UseStartup<Startup>();
                 });
         }
