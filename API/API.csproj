@@ -27,6 +27,19 @@
 
   <ItemGroup>
     <None Include=".circleci\config.yml"/>
+    <None Remove=".circleci\**"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove=".circleci\**"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove=".circleci\**"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove=".circleci\**"/>
   </ItemGroup>
 
 </Project>
