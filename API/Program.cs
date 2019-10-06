@@ -15,10 +15,8 @@ namespace API
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseKestrel();
-                    webBuilder.UseIISIntegration();
+                    webBuilder.UseUrls("http://localhost:5000", "http://*:80");
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("https://localhost:80");
                 });
         }
     }
