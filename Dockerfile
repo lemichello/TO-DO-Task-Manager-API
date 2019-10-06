@@ -20,6 +20,6 @@ RUN dotnet publish "API.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-CMD dotnet dev-certs https --clean
-CMD dotnet dev-certs https -t
+RUN dotnet dev-certs https --clean
+RUN dotnet dev-certs https
 CMD dotnet API.dll
