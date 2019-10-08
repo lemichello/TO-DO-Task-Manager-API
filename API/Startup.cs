@@ -37,8 +37,7 @@ namespace API
             {
                 builder.AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowAnyHeader();
             }));
             services.AddDbContext<EfContext>(opt => opt.UseSqlServer(Configuration["ConnectionString"]));
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
@@ -61,9 +60,9 @@ namespace API
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
-
             app.UseCors("CorsPolicy");
+
+            app.UseRouting();
 
             app.UseAuthorization();
 
