@@ -35,7 +35,7 @@ namespace API
 
             services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
             {
-                builder.WithOrigins("chrome-extension://miimgadmfgmhpdplnecaglnhaamgeegb")
+                builder.AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
