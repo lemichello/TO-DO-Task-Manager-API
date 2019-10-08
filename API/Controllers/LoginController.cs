@@ -3,7 +3,6 @@ using System.Linq;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DTO;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +20,6 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [EnableCors("CorsPolicy")]
         public IActionResult Login([FromBody] UserDto user)
         {
             if (!ModelState.IsValid)

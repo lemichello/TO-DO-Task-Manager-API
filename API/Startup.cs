@@ -35,9 +35,10 @@ namespace API
 
             services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins("chrome-extension://miimgadmfgmhpdplnecaglnhaamgeegb")
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .AllowCredentials();
             }));
             services.AddDbContext<EfContext>(opt => opt.UseSqlServer(Configuration["ConnectionString"]));
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
