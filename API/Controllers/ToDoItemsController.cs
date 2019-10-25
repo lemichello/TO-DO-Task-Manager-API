@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using API.Helpers;
+using System.Security.Cryptography;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
@@ -27,20 +27,21 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetItems()
+        [Route("{protectedId}")]
+        public IActionResult GetItems(string protectedId)
         {
-            string cookieValue;
+            string userIdStr;
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
+                userIdStr = _protector.Unprotect(protectedId);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(cookieValue);
+            var userId = int.Parse(userIdStr);
             var items = _repository
                 .GetAll(i => i.UserId == userId)
                 .AsNoTracking()
@@ -51,23 +52,24 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddItem([FromBody] BaseToDoItemDto item)
+        [Route("{protectedId}")]
+        public IActionResult AddItem(string protectedId, [FromBody] BaseToDoItemDto item)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string cookieValue;
+            string userIdStr;
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
+                userIdStr = _protector.Unprotect(protectedId);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId  = int.Parse(cookieValue);
+            var userId  = int.Parse(userIdStr);
             var newItem = _dtoMapper.Map<ToDoItem>(item);
 
             newItem.UserId       = userId;
@@ -79,7 +81,8 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        public HttpResponseMessage UpdateItem([FromBody] ToDoItemDto item)
+        [Route("{protectedId}")]
+        public HttpResponseMessage UpdateItem(string protectedId, [FromBody] ToDoItemDto item)
         {
             int userId;
 
@@ -88,10 +91,10 @@ namespace API.Controllers
 
             try
             {
-                var cookieValue = CookieHelper.GetCookieValue(Request, _protector);
-                userId = int.Parse(cookieValue);
+                var userIdStr = _protector.Unprotect(protectedId);
+                userId = int.Parse(userIdStr);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
@@ -122,8 +125,8 @@ namespace API.Controllers
         }
 
         [HttpDelete]
-        [Route("{itemId}")]
-        public HttpResponseMessage DeleteItem(int itemId)
+        [Route("{itemId}/{protectedId}")]
+        public HttpResponseMessage DeleteItem(int itemId, string protectedId)
         {
             int userId;
 
@@ -132,10 +135,10 @@ namespace API.Controllers
 
             try
             {
-                var cookieValue = CookieHelper.GetCookieValue(Request, _protector);
-                userId = int.Parse(cookieValue);
+                var userIdStr = _protector.Unprotect(protectedId);
+                userId = int.Parse(userIdStr);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }

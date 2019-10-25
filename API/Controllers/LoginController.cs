@@ -1,10 +1,8 @@
-using System;
 using System.Linq;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
 using DTO;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -34,15 +32,15 @@ namespace API.Controllers
                 return NotFound();
 
             var userId = _protector.Protect(foundUser.Id.ToString());
-            var options = new CookieOptions
-            {
-                Expires     = DateTimeOffset.Now.AddDays(4),
-                IsEssential = true
-            };
+            // var options = new CookieOptions
+            // {
+            //     Expires     = DateTimeOffset.Now.AddDays(4),
+            //     IsEssential = true
+            // };
 
-            Response.Cookies.Append("taskManagerUserId", userId, options);
+            // Response.Cookies.Append("taskManagerUserId", userId, options);
 
-            return Ok();
+            return Ok(userId);
         }
 
         private readonly IRepository<User> _repository;

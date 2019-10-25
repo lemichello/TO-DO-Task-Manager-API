@@ -36,10 +36,9 @@ namespace API
 
             services.AddCors(o => o.AddPolicy("default", builder =>
             {
-                builder.WithOrigins("http://192.168.15.63:5302")
+                builder.AllowAnyOrigin()
                     .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    .AllowAnyMethod();
             }));
             services.AddDbContext<EfContext>(opt => opt.UseSqlServer(Configuration["ConnectionString"]));
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
