@@ -31,7 +31,16 @@ namespace API.Controllers
             if (foundUser == null)
                 return NotFound();
 
-            return Ok(_protector.Protect(foundUser.Id.ToString()));
+            var userId = _protector.Protect(foundUser.Id.ToString());
+            // var options = new CookieOptions
+            // {
+            //     Expires     = DateTimeOffset.Now.AddDays(4),
+            //     IsEssential = true
+            // };
+
+            // Response.Cookies.Append("taskManagerUserId", userId, options);
+
+            return Ok(userId);
         }
 
         private readonly IRepository<User> _repository;

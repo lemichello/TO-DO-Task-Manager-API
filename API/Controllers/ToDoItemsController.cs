@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using API.Helpers;
+using System.Security.Cryptography;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
@@ -27,20 +27,20 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetItems()
+        public IActionResult GetItems([FromBody] BaseDto user)
         {
-            string cookieValue;
+            string unprotectedId;
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
+                unprotectedId = _protector.Unprotect(user.Credential);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(cookieValue);
+            var userId = int.Parse(unprotectedId);
             var items = _repository
                 .GetAll(i => i.UserId == userId)
                 .AsNoTracking()
@@ -56,18 +56,18 @@ namespace API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string cookieValue;
+            string unprotectedId;
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
+                unprotectedId = _protector.Unprotect(item.Credential);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId  = int.Parse(cookieValue);
+            var userId  = int.Parse(unprotectedId);
             var newItem = _dtoMapper.Map<ToDoItem>(item);
 
             newItem.UserId       = userId;
@@ -88,10 +88,10 @@ namespace API.Controllers
 
             try
             {
-                var cookieValue = CookieHelper.GetCookieValue(Request, _protector);
-                userId = int.Parse(cookieValue);
+                var unprotectedId = _protector.Unprotect(item.Credential);
+                userId = int.Parse(unprotectedId);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
@@ -121,9 +121,8 @@ namespace API.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("{itemId}")]
-        public HttpResponseMessage DeleteItem(int itemId)
+        [HttpPost("{id}")]
+        public HttpResponseMessage DeleteItem([FromBody] BaseDto user, int id)
         {
             int userId;
 
@@ -132,16 +131,16 @@ namespace API.Controllers
 
             try
             {
-                var cookieValue = CookieHelper.GetCookieValue(Request, _protector);
-                userId = int.Parse(cookieValue);
+                var unprotectedId = _protector.Unprotect(user.Credential);
+                userId = int.Parse(unprotectedId);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
 
             var deletingItem = _repository
-                .GetAll().FirstOrDefault(i => i.Id == itemId && i.UserId == userId);
+                .GetAll().FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
             if (deletingItem == null)
                 return new HttpResponseMessage(HttpStatusCode.NotFound);

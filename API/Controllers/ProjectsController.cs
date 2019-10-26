@@ -1,6 +1,5 @@
-using System;
 using System.Linq;
-using API.Helpers;
+using System.Security.Cryptography;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
@@ -23,21 +22,21 @@ namespace API.Controllers
             _protector               = provider.CreateProtector(nameof(LoginController));
         }
 
-        [HttpGet]
-        public IActionResult GetSharedProjects()
+        [HttpPost]
+        public IActionResult GetSharedProjects([FromBody] BaseDto user)
         {
-            string cookieValue;
+            string unprotectedId;
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
+                unprotectedId = _protector.Unprotect(user.Credential);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(cookieValue);
+            var userId = int.Parse(unprotectedId);
             var projects = _projectsUsersRepository
                 .GetAll(i => i.UserId == userId && i.IsAccepted)
                 .AsNoTracking()

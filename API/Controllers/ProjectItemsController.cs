@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using API.Helpers;
+using System.Security.Cryptography;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
@@ -27,18 +27,18 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult GetItemsForProject([FromBody] ProjectDto project)
         {
-            string cookieValue;
+            string unprotectedId;
 
             try
             {
-                cookieValue = CookieHelper.GetCookieValue(Request, _protector);
+                unprotectedId = _protector.Unprotect(project.Credential);
             }
-            catch (UnauthorizedAccessException)
+            catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId  = int.Parse(cookieValue);
+            var userId  = int.Parse(unprotectedId);
             var items   = _itemsRepository.GetAll().Include(i => i.Project).AsNoTracking();
             var minDate = DateTime.MinValue.AddYears(1753);
 

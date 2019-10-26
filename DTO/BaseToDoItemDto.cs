@@ -2,7 +2,7 @@ using System;
 
 namespace DTO
 {
-    public class BaseToDoItemDto
+    public class BaseToDoItemDto : BaseDto
     {
         public string Header { get; set; }
         public string Notes { get; set; }

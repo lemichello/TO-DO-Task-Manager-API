@@ -3,6 +3,7 @@ using AutoMapper;
 using DAL;
 using DAL.Repositories.Abstraction;
 using DAL.Repositories.Implementation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -33,18 +34,17 @@ namespace API
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            services.AddCors(o => o.AddPolicy("default", builder =>
             {
-                builder.WithOrigins("chrome-extension://miimgadmfgmhpdplnecaglnhaamgeegb")
-                    .AllowAnyMethod()
+                builder.AllowAnyOrigin()
                     .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowAnyMethod();
             }));
             services.AddDbContext<EfContext>(opt => opt.UseSqlServer(Configuration["ConnectionString"]));
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<Profile, MapperProfile>();
 
-            services.AddAuthentication();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddDataProtection()
                 .SetApplicationName("TO-DO Task Manager API");
 
@@ -59,13 +59,9 @@ namespace API
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            app.UseCors("default");
 
             app.UseRouting();
-
-            app.UseCors("CorsPolicy");
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
