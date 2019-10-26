@@ -22,22 +22,21 @@ namespace API.Controllers
             _protector               = provider.CreateProtector(nameof(LoginController));
         }
 
-        [HttpGet]
-        [Route("{protectedId}")]
-        public IActionResult GetSharedProjects(string protectedId)
+        [HttpPost]
+        public IActionResult GetSharedProjects([FromBody] BaseDto user)
         {
-            string userIdStr;
+            string unprotectedId;
 
             try
             {
-                userIdStr = _protector.Unprotect(protectedId);
+                unprotectedId = _protector.Unprotect(user.Credential);
             }
             catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(userIdStr);
+            var userId = int.Parse(unprotectedId);
             var projects = _projectsUsersRepository
                 .GetAll(i => i.UserId == userId && i.IsAccepted)
                 .AsNoTracking()

@@ -25,21 +25,20 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [Route("{protectedId}")]
-        public IActionResult GetItemsForProject(string protectedId, [FromBody] ProjectDto project)
+        public IActionResult GetItemsForProject([FromBody] ProjectDto project)
         {
-            string userIdStr;
+            string unprotectedId;
 
             try
             {
-                userIdStr = _protector.Unprotect(protectedId);
+                unprotectedId = _protector.Unprotect(project.Credential);
             }
             catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId  = int.Parse(userIdStr);
+            var userId  = int.Parse(unprotectedId);
             var items   = _itemsRepository.GetAll().Include(i => i.Project).AsNoTracking();
             var minDate = DateTime.MinValue.AddYears(1753);
 

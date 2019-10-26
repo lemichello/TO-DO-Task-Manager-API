@@ -61,8 +61,6 @@ namespace API
 
             app.UseCors("default");
 
-            app.UseAuthentication();
-
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

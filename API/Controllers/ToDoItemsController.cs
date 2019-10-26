@@ -27,21 +27,20 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        [Route("{protectedId}")]
-        public IActionResult GetItems(string protectedId)
+        public IActionResult GetItems([FromBody] BaseDto user)
         {
-            string userIdStr;
+            string unprotectedId;
 
             try
             {
-                userIdStr = _protector.Unprotect(protectedId);
+                unprotectedId = _protector.Unprotect(user.Credential);
             }
             catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId = int.Parse(userIdStr);
+            var userId = int.Parse(unprotectedId);
             var items = _repository
                 .GetAll(i => i.UserId == userId)
                 .AsNoTracking()
@@ -52,24 +51,23 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [Route("{protectedId}")]
-        public IActionResult AddItem(string protectedId, [FromBody] BaseToDoItemDto item)
+        public IActionResult AddItem([FromBody] BaseToDoItemDto item)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string userIdStr;
+            string unprotectedId;
 
             try
             {
-                userIdStr = _protector.Unprotect(protectedId);
+                unprotectedId = _protector.Unprotect(item.Credential);
             }
             catch (CryptographicException)
             {
                 return Unauthorized();
             }
 
-            var userId  = int.Parse(userIdStr);
+            var userId  = int.Parse(unprotectedId);
             var newItem = _dtoMapper.Map<ToDoItem>(item);
 
             newItem.UserId       = userId;
@@ -81,8 +79,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Route("{protectedId}")]
-        public HttpResponseMessage UpdateItem(string protectedId, [FromBody] ToDoItemDto item)
+        public HttpResponseMessage UpdateItem([FromBody] ToDoItemDto item)
         {
             int userId;
 
@@ -91,8 +88,8 @@ namespace API.Controllers
 
             try
             {
-                var userIdStr = _protector.Unprotect(protectedId);
-                userId = int.Parse(userIdStr);
+                var unprotectedId = _protector.Unprotect(item.Credential);
+                userId = int.Parse(unprotectedId);
             }
             catch (CryptographicException)
             {
@@ -125,8 +122,8 @@ namespace API.Controllers
         }
 
         [HttpDelete]
-        [Route("{itemId}/{protectedId}")]
-        public HttpResponseMessage DeleteItem(int itemId, string protectedId)
+        [Route("{itemId}")]
+        public HttpResponseMessage DeleteItem(int itemId, [FromBody] BaseDto user)
         {
             int userId;
 
@@ -135,8 +132,8 @@ namespace API.Controllers
 
             try
             {
-                var userIdStr = _protector.Unprotect(protectedId);
-                userId = int.Parse(userIdStr);
+                var unprotectedId = _protector.Unprotect(user.Credential);
+                userId = int.Parse(unprotectedId);
             }
             catch (CryptographicException)
             {
