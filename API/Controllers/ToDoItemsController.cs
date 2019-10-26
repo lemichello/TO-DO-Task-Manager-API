@@ -121,9 +121,8 @@ namespace API.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("{itemId}")]
-        public HttpResponseMessage DeleteItem(int itemId, [FromBody] BaseDto user)
+        [HttpPost("{id}")]
+        public HttpResponseMessage DeleteItem([FromBody] BaseDto user, int id)
         {
             int userId;
 
@@ -141,7 +140,7 @@ namespace API.Controllers
             }
 
             var deletingItem = _repository
-                .GetAll().FirstOrDefault(i => i.Id == itemId && i.UserId == userId);
+                .GetAll().FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
             if (deletingItem == null)
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
