@@ -27,7 +27,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetItems([FromBody] BaseDto user)
+        public IActionResult GetUncompletedItems([FromBody] BaseDto user)
         {
             string unprotectedId;
 
@@ -40,9 +40,10 @@ namespace API.Controllers
                 return Unauthorized();
             }
 
-            var userId = int.Parse(unprotectedId);
+            var minDate = DateTime.MinValue.AddYears(1753);
+            var userId  = int.Parse(unprotectedId);
             var items = _repository
-                .GetAll(i => i.UserId == userId)
+                .GetAll(i => i.UserId == userId && i.CompleteDate == minDate)
                 .AsNoTracking()
                 .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
                 .ToList();

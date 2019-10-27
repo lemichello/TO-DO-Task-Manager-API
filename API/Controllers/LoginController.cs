@@ -32,13 +32,6 @@ namespace API.Controllers
                 return NotFound();
 
             var userId = _protector.Protect(foundUser.Id.ToString());
-            // var options = new CookieOptions
-            // {
-            //     Expires     = DateTimeOffset.Now.AddDays(4),
-            //     IsEssential = true
-            // };
-
-            // Response.Cookies.Append("taskManagerUserId", userId, options);
 
             return Ok(userId);
         }
