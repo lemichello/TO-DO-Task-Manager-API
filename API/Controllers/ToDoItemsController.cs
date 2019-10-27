@@ -27,32 +27,6 @@ namespace API.Controllers
             _protector              = provider.CreateProtector(nameof(LoginController));
         }
 
-        [HttpGet]
-        public IActionResult GetUncompletedItems([FromBody] BaseDto user)
-        {
-            string unprotectedId;
-
-            try
-            {
-                unprotectedId = _protector.Unprotect(user.Credential);
-            }
-            catch (CryptographicException)
-            {
-                return Unauthorized();
-            }
-
-            var minDate = DateTime.MinValue.AddYears(1753);
-            var userId  = int.Parse(unprotectedId);
-            var items = _repository
-                .GetAll(i => i.UserId == userId && i.CompleteDate == minDate)
-                .Include(i => i.Project)
-                .AsNoTracking()
-                .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
-                .ToList();
-
-            return Ok(items);
-        }
-
         [HttpPost]
         public IActionResult AddItem([FromBody] BaseToDoItemDto item)
         {
