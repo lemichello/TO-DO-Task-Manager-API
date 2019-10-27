@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
+using API.Helpers;
 using AutoMapper;
 using DAL.Entities;
 using DAL.Repositories.Abstraction;
@@ -44,6 +45,7 @@ namespace API.Controllers
             var userId  = int.Parse(unprotectedId);
             var items = _repository
                 .GetAll(i => i.UserId == userId && i.CompleteDate == minDate)
+                .Include(i => i.Project)
                 .AsNoTracking()
                 .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
                 .ToList();
@@ -101,13 +103,12 @@ namespace API.Controllers
             {
                 var editedItem = _dtoMapper.Map<ToDoItem>(item);
 
-                var projectsUsers = _projectUsersRepository.GetAll(p => p.UserId == userId && p.IsAccepted)
+                var projectsUsers = _projectUsersRepository
+                    .GetAll(p => p.UserId == userId && p.IsAccepted)
                     .AsNoTracking();
 
                 // User is modifying the item, which is not owned by him.
-                if (!_repository.GetAll().AsNoTracking().Any(i =>
-                    i.Id == editedItem.Id && i.UserId == userId && (i.ProjectId == null || projectsUsers.Any(p =>
-                                                                        i.ProjectId == p.ProjectId))))
+                if (!ToDoItemsHelper.IsItemOwnedByUser(_repository, editedItem, userId, projectsUsers))
                     return new HttpResponseMessage(HttpStatusCode.NotFound);
 
                 editedItem.UserId = userId;
