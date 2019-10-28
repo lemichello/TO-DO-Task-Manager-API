@@ -8,7 +8,6 @@ using DTO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace API.Controllers
 {
@@ -46,9 +45,8 @@ namespace API.Controllers
                 .AsNoTracking()
                 .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
                 .ToList();
-            var json = JsonConvert.SerializeObject(items);
-
-            return Content(json, "application/json");
+            
+            return Ok(items);
         }
 
         private readonly Mapper                _dtoMapper;
