@@ -9,6 +9,7 @@ using DTO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace API.Controllers
 {
@@ -46,8 +47,9 @@ namespace API.Controllers
             {
                 items = items.Where(i => i.UserId == userId);
                 var projectItems = ProjectsService.GetItemsFromDefaultProject(project, items, _dtoMapper).ToList();
+                var json = JsonConvert.SerializeObject(projectItems);
 
-                return Ok(projectItems);
+                return Content(json, "application/json");
             }
             else
             {
@@ -57,8 +59,9 @@ namespace API.Controllers
                                 i.CompleteDate == minDate)
                     .Select(i => _dtoMapper.Map<ToDoItemDto>(i))
                     .ToList();
+                var json = JsonConvert.SerializeObject(projectItems);
 
-                return Ok(projectItems);
+                return Content(json, "application/json");
             }
         }
 
